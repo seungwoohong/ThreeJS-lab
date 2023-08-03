@@ -1,11 +1,17 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GUI } from 'lil-gui'
 
+/**
+ * Debug
+ */
+const gui = new GUI();
 THREE.ColorManagement.enabled = false;
 
 /**
  * Textures
  */
+const cubeTextureLoader = new THREE.CubeTextureLoader();
 const textureLoader = new THREE.TextureLoader();
 const doorColorTexture = textureLoader.load("/textures/door/color.jpg");
 const doorAlphaTexture = textureLoader.load("/textures/door/alpha.jpg");
@@ -19,6 +25,15 @@ const doorRoughnessTexture = textureLoader.load("/textures/door/roughness.jpg");
 
 const matacapTexture = textureLoader.load("/textures/matcaps/1.png");
 const gradientTexture = textureLoader.load("/textures/gradient/3.png");
+
+const environmentMapTexture = cubeTextureLoader.load([
+  '/textures/environmentMaps/1/px.jpg',
+  '/textures/environmentMaps/1/nx.jpg',
+  '/textures/environmentMaps/1/py.jpg',
+  '/textures/environmentMaps/1/nx.jpg',
+  '/textures/environmentMaps/1/pz.jpg',
+  '/textures/environmentMaps/1/nz.jpg',
+])
 
 /**
  * Base
@@ -58,8 +73,33 @@ const sizes = {
 // material.shininess = 100;
 // material.specular = new THREE.Color(0x1188ff);
 
-const material = new THREE.MeshToonMaterial();
-material.gradientMap = gradientTexture;
+// const material = new THREE.MeshToonMaterial();
+const material = new THREE.MeshStandardMaterial();
+// const material = new THREE.MeshPhysicalMaterial(); // is the same as MeshStandardMaterial but with support of clear coat effect;
+/**
+ * @description MeshStandardMaterial uses phsically based render
+ */
+material.metalness = 0.5
+material.roughness = 0.5
+// material.gradientMap = gradientTexture;
+// material.map = doorColorTexture;
+// material.aoMap = doorAmbientOcclusionTexture; // ambient occlusion
+// material.aoMapIntensity = 1.5;
+// material.displacementMap = doorHeightTexture; // subdivision
+// material.displacementScale = 0.05;
+// material.roughnessMap = doorRoughnessTexture;
+// material.metalnessMap = doorMetalnessTexture;
+// material.normalMap = doorNormalTexture;
+// material.normalScale.set(0.5, 0.5)
+// material.transparent = true;
+// material.alphaMap = doorAlphaTexture;
+material.envMap = environmentMapTexture
+
+gui.add(material, 'metalness').min(0).max(1);
+gui.add(material, 'roughness').min(0).max(1);
+gui.add(material, 'aoMapIntensity').min(0).max(10).step(0.01);
+gui.add(material, 'displacementScale').min(0).max(1).step(0.001);
+
 gradientTexture.minFilter = THREE.NearestFilter;
 gradientTexture.magFilter = THREE.NearestFilter;
 gradientTexture.generateMipmaps = false;
