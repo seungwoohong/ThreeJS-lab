@@ -76,6 +76,18 @@ window.addEventListener("resize", () => {
 });
 
 /**
+ * Mouse
+ */
+const mouse = new THREE.Vector2();
+
+window.addEventListener("mousemove", (e) => {
+  mouse.x = (e.clientX / sizes.width) * 2 - 1; // -1 ~ 1
+  mouse.y = -(e.clientX / sizes.height) * 2 + 1; // -1 ~ 1
+
+  console.log(mouse);
+});
+
+/**
  * Camera
  */
 // Base camera
@@ -109,6 +121,25 @@ const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+
+  // Animate Objects
+  object1.position.y = Math.sin(elapsedTime * 0.3) * 1.5;
+  object2.position.y = Math.sin(elapsedTime * 0.8) * 1.5;
+  object3.position.y = Math.sin(elapsedTime * 1.4) * 1.5;
+
+  // // Cast a ray
+  rayCaster.setFromCamera(mouse, camera);
+
+  const objectsToTest = [object1, object2, object3];
+  const intersects = rayCaster.intersectObjects(objectsToTest);
+
+  for (const object of objectsToTest) {
+    object.material.color.set("#ff0000");
+  }
+
+  for (const intersect of intersects) {
+    intersect.object.material.color.set("#0000ff");
+  }
 
   // Update controls
   controls.update();
