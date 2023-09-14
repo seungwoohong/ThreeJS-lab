@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import * as dat from "lil-gui";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 THREE.ColorManagement.enabled = false;
 
@@ -13,8 +14,29 @@ const gui = new dat.GUI();
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
 
+let currentIntersect = null;
+
 // Scene
 const scene = new THREE.Scene();
+
+let model = null;
+/**
+ * Model
+ */
+const gltfLoader = new GLTFLoader();
+gltfLoader.load("/models/Duck/glTF-Binary/Duck.glb", (gltf) => {
+  model = gltf.scene;
+  model.position.y = -1.2;
+  scene.add(model);
+});
+
+/**
+ * Lights
+ */
+
+const ambientLight = new THREE.AmbientLight("#ffffff", 0.3);
+const directionalLight = new THREE.DirectionalLight("#ffffff", 0.7);
+scene.add(ambientLight, directionalLight);
 
 /**
  * Objects
@@ -83,8 +105,18 @@ const mouse = new THREE.Vector2();
 window.addEventListener("mousemove", (e) => {
   mouse.x = (e.clientX / sizes.width) * 2 - 1; // -1 ~ 1
   mouse.y = -(e.clientX / sizes.height) * 2 + 1; // -1 ~ 1
+});
 
-  console.log(mouse);
+window.addEventListener("click", () => {
+  if (currentIntersect) {
+    if (currentIntersect.object === object1) {
+      console.log("click on object 1");
+    } else if (currentIntersect.object === object2) {
+      console.log("click on object 2");
+    } else if (currentIntersect.object === object3) {
+      console.log("click on object 3");
+    }
+  }
 });
 
 /**
@@ -139,6 +171,29 @@ const tick = () => {
 
   for (const intersect of intersects) {
     intersect.object.material.color.set("#0000ff");
+  }
+
+  if (intersects.length) {
+    if (currentIntersect === null) {
+      console.log("mouse enter");
+    }
+
+    currentIntersect = intersects[0];
+  } else {
+    if (currentIntersect) {
+      console.log("mouse leave");
+    }
+    currentIntersect = null;
+  }
+
+  if (model) {
+    const modelIntersects = rayCaster.intersectObject(model);
+
+    if (modelIntersects.length) {
+      model.scale.set(1.2, 1.2, 1.2);
+    } else {
+      model.scale.set(1, 1, 1);
+    }
   }
 
   // Update controls
